@@ -24,15 +24,7 @@ def process_acquisition(q):
             current.add(connection)
 
             if connection not in seen:
-                try:
-                    process = psutil.Process(c.pid).name()
-                except (psutil.NoSuchProcess, psutil.AccessDenied):
-                    process = f"PID {c.pid}"
-
                 q.put((c.pid, remote_ip, remote_port))
 
         seen = current
         time.sleep(1)
-
-if __name__ == "__main__":
-    process_acquisition()
