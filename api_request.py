@@ -11,7 +11,7 @@ CACHE_FILE = os.path.join(BASE_DIR, "ip_cache.json")
 EVENTS_FILE = os.path.join(BASE_DIR, "events.json")
 
 ip_cache = {}
-
+events = []
 
 def load_json(path):
     if not os.path.exists(path):
@@ -71,7 +71,8 @@ def load_cache():
             "city": event.get("city"),
             "query": ip,
             "org": event.get("org", ""),
-            "as": event.get("as", "")
+            "as": event.get("as", ""),
+            "isp": event.get("isp", "")
         }
 
     if ip_cache:
@@ -87,7 +88,7 @@ def is_private_ip(ip):
     return address.is_private or address.is_loopback
 
 
-def api_request(ip_url):
+def api_request(ip_url, events):
     try:
         response = requests.get(ip_url, timeout=10)
         response.raise_for_status()
@@ -102,12 +103,14 @@ def api_request(ip_url):
         "city": data.get("city"),
         "query": data.get("query"),
         "org": data.get("org"),
-        "as": data.get("as")
+        "as": data.get("as"),
+        "isp": data.get("isp")
     }
 
 
 def api_worker(queue):
     load_cache()
+    events = load_json(EVENTS_FILE)
 
     while True:
         pid, remote_ip, remote_port = queue.get()
@@ -133,7 +136,6 @@ def api_worker(queue):
 
             if remote_ip not in ip_cache:
                 ip_cache[remote_ip] = result
-                save_json(CACHE_FILE, ip_cache)
 
             event = {
                 "id": time.time_ns(),
@@ -143,14 +145,22 @@ def api_worker(queue):
                 "country": result.get("country"),
                 "city": result.get("city"),
                 "lat": result.get("lat"),
-                "lon": result.get("lon")
+                "lon": result.get("lon"),
+                "as": result.get("as"),
+                "isp": result.get("isp"),
+                "org": result.get("org")
             }
 
-            events = load_json(EVENTS_FILE)
             if not isinstance(events, list):
                 events = []
 
             events.append(event)
-            save_json(EVENTS_FILE, events)
         finally:
             queue.task_done()
+
+def sync(events):
+    while True:
+        time.sleep(5)
+        save_json(EVENTS_FILE, events)
+
+

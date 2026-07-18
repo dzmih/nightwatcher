@@ -1,11 +1,12 @@
 import threading
 import time
 from queue import Queue
-
+from api_request import load_json, EVENTS_FILE
 import api_request
 from process_acquisition import process_acquisition
 
-
+events = load_json(EVENTS_FILE)
+events_lock = threading.Lock()
 queue = Queue()
 
 api_thread = threading.Thread(
