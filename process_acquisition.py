@@ -1,30 +1,24 @@
 import time
+
 import psutil
 
+
 def snapshot():
-    current = set()
-    for c in psutil.net_connections(kind="tcp"):
-        if not c.raddr or c.status != "ESTABLISHED":
+    connections = set()
+
+    for connection in psutil.net_connections(kind="tcp"):
+        if not connection.raddr or connection.status != "ESTABLISHED":
             continue
-        remote_ip, remote_port = c.raddr
-        current.add((c.pid, remote_ip, remote_port))
-    return current
 
-def process_acquisition(q):
-    seen = set()
+        remote_ip, remote_port = connection.raddr
+        connections.add((connection.pid, remote_ip, remote_port))
+
+    return connections
+
+
+def process_acquisition(queue):
     while True:
-        current = set()
+        for connection in snapshot():
+            queue.put(connection)
 
-        for c in psutil.net_connections(kind="tcp"):
-            if not c.raddr or c.status != "ESTABLISHED":
-                continue
-
-            remote_ip, remote_port = c.raddr
-            connection = (c.pid, remote_ip, remote_port)
-            current.add(connection)
-
-            if connection not in seen:
-                q.put((c.pid, remote_ip, remote_port))
-
-        seen = current
         time.sleep(1)
