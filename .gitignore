@@ -1,3 +1,6 @@
 .venv/
 __pycache__/
 *.pyc
+events.json
+events.json.tmp
+ip_cache.json
