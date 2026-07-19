@@ -11,7 +11,7 @@ queue = Queue()
 
 api_thread = threading.Thread(
     target=api_request.api_worker,
-    args=(queue,),
+    args=(queue, events, events_lock),
     daemon=True
 )
 acquisition_thread = threading.Thread(

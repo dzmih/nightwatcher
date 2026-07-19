@@ -88,7 +88,7 @@ def is_private_ip(ip):
     return address.is_private or address.is_loopback
 
 
-def api_request(ip_url, events):
+def api_request(ip_url):
     try:
         response = requests.get(ip_url, timeout=10)
         response.raise_for_status()
@@ -108,9 +108,8 @@ def api_request(ip_url, events):
     }
 
 
-def api_worker(queue):
+def api_worker(queue, events, events_lock):
     load_cache()
-    events = load_json(EVENTS_FILE)
 
     while True:
         pid, remote_ip, remote_port = queue.get()
@@ -154,13 +153,12 @@ def api_worker(queue):
             if not isinstance(events, list):
                 events = []
 
-            events.append(event)
+            with events_lock:
+                events.append(event)
+
+                data = events.copy()
+
+            save_json(EVENTS_FILE, data)
         finally:
             queue.task_done()
-
-def sync(events):
-    while True:
-        time.sleep(5)
-        save_json(EVENTS_FILE, events)
-
 

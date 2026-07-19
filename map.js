@@ -9,12 +9,12 @@ const map = L.map("map", {
   zoomAnimation: false,
   fadeAnimation: false,
   markerZoomAnimation: false,
-  worldCopyJump: false
+  worldCopyJump: false,
 }).setView([35, 20], 3);
 
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
   attribution: "&copy; OpenStreetMap contributors",
-  noWrap: true
+  noWrap: true,
 }).addTo(map);
 
 L.circleMarker(source, { radius: 6, className: "pulse" })
@@ -31,12 +31,12 @@ function registerDestination(event) {
         radius: 5,
         color: "#00e5ff",
         fillColor: "#00e5ff",
-        fillOpacity: 1
+        fillOpacity: 1,
       }).addTo(map),
       count: 0,
       as: event.as || "unknown",
       isp: event.isp || "unknown",
-      org: event.org || "unknown"
+      org: event.org || "unknown",
     };
 
     destinations.set(key, destination);
@@ -45,17 +45,17 @@ function registerDestination(event) {
   destination.count += 1;
   destination.marker.bindTooltip(
     `Пакетов: ${destination.count}<br>` +
-    `AS: ${destination.as}<br>` +
-    `ISP: ${destination.isp}<br>` +
-    `ORG: ${destination.org}`,
-    { direction: "top" }
+      `AS: ${destination.as}<br>` +
+      `ISP: ${destination.isp}<br>` +
+      `ORG: ${destination.org}`,
+    { direction: "top" },
   );
 }
 
 function pointAt(start, end, progress) {
   return [
     start[0] + (end[0] - start[0]) * progress,
-    start[1] + (end[1] - start[1]) * progress
+    start[1] + (end[1] - start[1]) * progress,
   ];
 }
 
@@ -63,16 +63,16 @@ function launchBeam(event) {
   const target = [event.lat, event.lon];
   const beam = L.polyline([source, source], {
     className: "beam",
-    opacity: 1
+    opacity: 1,
   }).addTo(map);
   const glow = L.polyline([source, source], {
     className: "beam",
     weight: 9,
-    opacity: 0.25
+    opacity: 0.25,
   }).addTo(map);
   const pulse = L.circleMarker(source, {
     radius: 5,
-    className: "pulse"
+    className: "pulse",
   }).addTo(map);
 
   const beamLength = 0.18;
@@ -91,9 +91,8 @@ function launchBeam(event) {
     glow.setLatLngs([tail, head]);
     pulse.setLatLng(head);
 
-    const opacity = progress > 1
-      ? Math.max(0, 1 - (progress - 1) / beamLength)
-      : 1;
+    const opacity =
+      progress > 1 ? Math.max(0, 1 - (progress - 1) / beamLength) : 1;
 
     beam.setStyle({ opacity });
     glow.setStyle({ opacity: opacity * 0.25 });

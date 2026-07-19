@@ -17,8 +17,13 @@ def snapshot():
 
 
 def process_acquisition(queue):
+    seen = set()
+
     while True:
-        for connection in snapshot():
+        current = snapshot()
+
+        for connection in current - seen:
             queue.put(connection)
 
+        seen = current
         time.sleep(1)
